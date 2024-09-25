@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import { FormField, Loader, Card } from "../components";
 
 const RenderCards = ({ data, title }) => {
-  if (data?.length > 0)
-    return data.map((post) => <Card key={post.id} {...post} />);
+  if (data?.length > 0) {
+    return (
+      data.map((post) => <Card key={post._id} {...post} />)
+    );
+  }
+
   return (
     <h2 className="mt-5 font-bold text-[#6469ff] text-xl uppercase">{title}</h2>
   );
@@ -11,7 +15,7 @@ const RenderCards = ({ data, title }) => {
 
 function Home() {
   const [loading, setLoading] = useState(false);
-  const [allPost, setAllPost] = useState(null);
+  const [allPosts, setAllPosts] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [searchedResults, setSearchedResults] = useState(null);
@@ -30,7 +34,7 @@ function Home() {
         if (response.ok) {
           const result = await response.json();
 
-          setAllPost(result.data.reverse());
+          setAllPosts(result.data.reverse());
         }
       } catch (error) {
         alert(error);
@@ -99,7 +103,7 @@ function Home() {
                   title="No search results found"
                 />
               ) : (
-                <RenderCards data={allPost} title="No post found" />
+                <RenderCards data={allPosts} title="No post found" />
               )}
             </div>
           </>
