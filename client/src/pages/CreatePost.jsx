@@ -24,7 +24,9 @@ function CreatePost() {
     const randomPrompt = getRandomPrompt(form.prompt);
     setForm({ ...form, prompt: randomPrompt });
   };
-  const generateImg = () => {};
+  const generateImg = () => {
+    
+  };
 
   return (
     <section className="max-w-7xl mx-auto">
