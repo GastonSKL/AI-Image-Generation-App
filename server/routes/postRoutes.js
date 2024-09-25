@@ -15,28 +15,36 @@ cloudinary.config({
 
 router.route("/").get(async (req, res) => {
   try {
-    const post = await Post.find({});
-    res.status(200).json({ success: true, data: post });
+    const posts = await Post.find({});
+    res.status(200).json({ success: true, data: posts });
   } catch (error) {
-    res.status(500).json({ success: false, message: error });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
 router.route("/").post(async (req, res) => {
   try {
     const { name, prompt, photo } = req.body;
-    const photoUrl = await cloudinary.uploader.upload(photo);
+
+    // Strip the base64 prefix before uploading
+    const base64Image = photo.split(",")[1]; // Get the actual base64 part
+
+    // Upload the image to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(`data:image/jpeg;base64,${base64Image}`, {
+      resource_type: 'auto', // Automatically handle the type
+      public_id: name.replace(/\s+/g, '_'), // Optional: Use name as the public ID
+    });
 
     const newPost = await Post.create({
       name,
       prompt,
-      photo: photoUrl.url,
+      photo: uploadResult.secure_url, // Use secure_url for HTTPS link
     });
 
     res.status(201).json({ success: true, data: newPost });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: error });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

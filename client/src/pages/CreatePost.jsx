@@ -61,9 +61,9 @@ function CreatePost() {
             prompt: form.prompt,
           }),
         });
-
-        const data = await response.json();
-        setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` });
+  
+        const data = await response.json(); // Get the JSON response with base64 image
+        setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` }); // Set photo as base64 image
       } catch (err) {
         alert(err);
       } finally {
@@ -73,6 +73,8 @@ function CreatePost() {
       alert("Please provide proper prompt");
     }
   };
+  
+
 
   return (
     <section className="max-w-7xl mx-auto">

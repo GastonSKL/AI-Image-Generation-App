@@ -1,48 +1,50 @@
 import express from "express";
 import * as dotenv from "dotenv";
 import OpenAI from "openai";
+import fs from "node:fs";
+import axios from "axios";
+import FormData from "form-data";
 
 dotenv.config();
 
 const router = express.Router();
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-router.route("/").get((req, res) => {
-  res.status(200).json({ message: "Hello from DALL-E!" });
-});
 
 router.route("/").post(async (req, res) => {
   try {
-    debugger;
     const { prompt } = req.body;
 
-    // const aiResponse = await openai.createImage({
-    //   prompt,
-    //   n: 1,
-    //   size: '1024x1024',
-    //   response_format: 'b64_json',
-    // });
+    const formData = new FormData();
+    formData.append('prompt', prompt);
+    formData.append('output_format', 'jpeg');
 
-    // const image = aiResponse.data.data[0].b64_json;
-    // res.status(200).json({ photo: image });
+    const response = await axios.post(
+      'https://api.stability.ai/v2beta/stable-image/generate/sd3',
+      formData,
+      {
+        validateStatus: undefined,
+        responseType: 'arraybuffer',
+        headers: { 
+          Authorization: `Bearer ${process.env.STABILITY_AI_API_KEY}`, 
+          Accept: 'image/*',
+          ...formData.getHeaders(),
+        },
+      }
+    );
 
-    const aiResponse = await openai.images.generate({
-      prompt,
-      n: 1,
-      size: "1024x1024",
-      response_format: "b64_json",
-    });
+    if (response.status === 200) {
+      const base64Image = Buffer.from(response.data).toString('base64');
+      res.json({ photo: base64Image }); // Send the base64 image in a JSON response
+    } else {
+      throw new Error(`${response.status}: ${response.data.toString()}`);
+    }
 
-    const image = aiResponse.data[0].b64_json;
-
-    return res.status(200).json({ photo: image });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .send(error?.response.data.error.message || "Something went wrong");
+    const errorMessage = error.response?.data?.error?.message || error.message || "Something went wrong";
+    res.status(500).send(errorMessage);
   }
 });
+
 
 export default router;
